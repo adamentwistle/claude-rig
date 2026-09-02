@@ -7,9 +7,13 @@
 
 Roles in the status line: label (the "5hr:" / "model:" chips), value (everything else),
 accent (the streaks badge), and good / warn / bad for the usage bars.
-Ghostty needs cmd+shift+, to reload after a switch.
+Ghostty needs cmd+shift+, to reload after a switch. On Windows there is no Ghostty; WezTerm
+watches the .theme marker this writes and reloads by itself.
 """
 import json, os, re, sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 HOME = os.path.expanduser("~")
 CCS = os.path.join(HOME, ".config/ccstatusline/settings.json")
@@ -36,7 +40,7 @@ THEMES = {
 
 def current():
     try:
-        return open(MARK).read().strip()
+        return open(MARK, encoding="utf-8").read().strip()
     except OSError:
         return None
 
@@ -46,7 +50,7 @@ def apply(name):
     if not t:
         sys.exit(f"unknown theme: {name}  (have: {', '.join(THEMES)})")
     cur = THEMES.get(current() or "", None)
-    c = json.load(open(CCS))
+    c = json.load(open(CCS, encoding="utf-8"))
     for line in c["lines"]:
         for item in line:
             bg = item.get("backgroundColor", "")
@@ -67,30 +71,32 @@ def apply(name):
             item["color"] = f"hex:{t[key + '_fg']}"
     c["colorLevel"] = 3
     tmp = CCS + ".tmp"
-    with open(tmp, "w") as f:
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(c, f, indent=2)
         f.write("\n")
     os.replace(tmp, CCS)
-    json.dump({"good": t["good"], "warn": t["warn"], "bad": t["bad"]}, open(PALETTE, "w"))
-    g = open(GHOSTTY).read()
-    line = f"theme = {t['ghostty']}"
-    g2, n = re.subn(r"^theme = .*$", line, g, flags=re.M)
-    if n == 0:
-        g2 = g.rstrip("\n") + "\n\n" + line + "\n"
-    open(GHOSTTY, "w").write(g2)
+    json.dump({"good": t["good"], "warn": t["warn"], "bad": t["bad"]}, open(PALETTE, "w", encoding="utf-8"))
+    if os.path.exists(GHOSTTY):  # absent on Windows, where WezTerm watches the .theme marker instead
+        g = open(GHOSTTY, encoding="utf-8").read()
+        line = f"theme = {t['ghostty']}"
+        g2, n = re.subn(r"^theme = .*$", line, g, flags=re.M)
+        if n == 0:
+            g2 = g.rstrip("\n") + "\n\n" + line + "\n"
+        open(GHOSTTY, "w", encoding="utf-8").write(g2)
     try:  # re-tint the cursor trail shader
         h = t["cursor"]; r, g, b = (int(h[k:k+2], 16) / 255 for k in (0, 2, 4))
-        sh = open(SHADER).read()
+        sh = open(SHADER, encoding="utf-8").read()
         sh2 = re.sub(r"^const vec3 TRAIL_COLOR = .*$", f"const vec3 TRAIL_COLOR = vec3({r:.3f}, {g:.3f}, {b:.3f}); // #{h}", sh, flags=re.M)
-        open(SHADER, "w").write(sh2)
+        open(SHADER, "w", encoding="utf-8").write(sh2)
         h = t["bg"]; r, g, b = (int(h[k:k+2], 16) / 255 for k in (0, 2, 4))
-        st = open(STARS).read()
+        st = open(STARS, encoding="utf-8").read()
         st2 = re.sub(r"^const vec3 BG = .*$", f"const vec3 BG = vec3({r:.3f}, {g:.3f}, {b:.3f}); // #{h}", st, flags=re.M)
-        open(STARS, "w").write(st2)
+        open(STARS, "w", encoding="utf-8").write(st2)
     except OSError:
         pass
-    open(MARK, "w").write(name + "\n")
-    print(f"theme: {name}  (Ghostty '{t['ghostty']}', reload with cmd+shift+,)")
+    open(MARK, "w", encoding="utf-8").write(name + "\n")
+    how = "WezTerm reloads by itself" if sys.platform == "win32" else f"Ghostty '{t['ghostty']}', reload with cmd+shift+,"
+    print(f"theme: {name}  ({how})")
 
 
 def main(argv):

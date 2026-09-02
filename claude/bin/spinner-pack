@@ -15,6 +15,9 @@ Claude Code picks up the change live; no restart needed.
 """
 import json, os, random, sys, time, datetime
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 HOME = os.path.expanduser("~")
 CFG = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(HOME, ".claude-work")
 PACKS = os.path.join(CFG, "spinner-packs")
@@ -29,19 +32,19 @@ def packs():
 
 def active():
     try:
-        return open(MARK).read().strip()
+        return open(MARK, encoding="utf-8").read().strip()
     except OSError:
         return None
 
 
 def load_settings():
-    with open(SETTINGS) as f:
+    with open(SETTINGS, encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_settings(s):
     tmp = SETTINGS + ".tmp"
-    with open(tmp, "w") as f:
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(s, f, indent=2, ensure_ascii=False)
         f.write("\n")
     os.replace(tmp, SETTINGS)
@@ -51,11 +54,11 @@ def activate(name, append=False):
     path = os.path.join(PACKS, name + ".json")
     if not os.path.exists(path):
         sys.exit(f"no such pack: {name}  (have: {', '.join(packs())})")
-    verbs = json.load(open(path))
+    verbs = json.load(open(path, encoding="utf-8"))
     s = load_settings()
     s["spinnerVerbs"] = {"mode": "append" if append else "replace", "verbs": verbs}
     save_settings(s)
-    open(MARK, "w").write(name + "\n")
+    open(MARK, "w", encoding="utf-8").write(name + "\n")
     print(f"spinner pack: {name} ({len(verbs)} verbs, {'append' if append else 'replace'})")
 
 
@@ -77,7 +80,7 @@ def main(argv):
     if cmd == "list":
         cur = active()
         for p in packs():
-            n = len(json.load(open(os.path.join(PACKS, p + ".json"))))
+            n = len(json.load(open(os.path.join(PACKS, p + ".json"), encoding="utf-8")))
             print(f"{'*' if p == cur else ' '} {p:<12} {n:>2} verbs")
     elif cmd == "current":
         print(active() or "off")
@@ -88,7 +91,7 @@ def main(argv):
         activate(random.choice(choices), append)
     elif cmd == "rotate":
         try:
-            order = [p for p in json.load(open(ROTATION)) if p in packs()]
+            order = [p for p in json.load(open(ROTATION, encoding="utf-8")) if p in packs()]
         except Exception:
             order = packs()
         cur = active()

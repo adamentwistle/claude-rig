@@ -18,6 +18,9 @@ for fable. No network, no credentials.
 import json
 import os
 import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 import time
 from datetime import datetime
 
@@ -27,7 +30,7 @@ def _palette():
     """good/warn/bad as RGB tuples, from palette.json written by ccs-theme; Kanagawa Wave if absent."""
     defaults = {"good": "98bb6c", "warn": "e6c384", "bad": "ff5d62"}
     try:
-        defaults.update(json.load(open(os.path.expanduser("~/.config/ccstatusline/palette.json"))))
+        defaults.update(json.load(open(os.path.expanduser("~/.config/ccstatusline/palette.json"), encoding="utf-8")))
     except Exception:
         pass
     to_rgb = lambda h: (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
@@ -68,7 +71,7 @@ def read_cache(now):
     try:
         if now - os.path.getmtime(path) > CACHE_STALE_AFTER:
             return None
-        data = json.load(open(path))
+        data = json.load(open(path, encoding="utf-8"))
         if data.get("error"):
             return None
         return data

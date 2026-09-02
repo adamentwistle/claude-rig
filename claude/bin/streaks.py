@@ -13,11 +13,18 @@ Subcommands
 State lives in ~/.claude-work/streaks/state.json. Weekends never break a streak;
 they only count if you used Claude that day.
 """
-import fcntl
 import json
 import os
 import subprocess
 import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+try:
+    import fcntl  # macOS / Linux
+except ImportError:  # Windows
+    fcntl = None
+    import msvcrt
 from datetime import date, datetime, timedelta
 
 CFG = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude-work")
@@ -73,10 +80,13 @@ class locked_state:
 
     def __enter__(self):
         os.makedirs(DIR, exist_ok=True)
-        self.lock = open(LOCK, "w")
-        fcntl.flock(self.lock, fcntl.LOCK_EX)
+        self.lock = open(LOCK, "w", encoding="utf-8")
+        if fcntl:
+            fcntl.flock(self.lock, fcntl.LOCK_EX)
+        else:
+            msvcrt.locking(self.lock.fileno(), msvcrt.LK_LOCK, 1)
         try:
-            self.state = json.load(open(STATE))
+            self.state = json.load(open(STATE, encoding="utf-8"))
         except Exception:
             self.state = empty_state()
         self.before = json.dumps(self.state, sort_keys=True)
@@ -86,17 +96,20 @@ class locked_state:
         try:
             if exc[0] is None and json.dumps(self.state, sort_keys=True) != self.before:
                 tmp = STATE + ".tmp"
-                with open(tmp, "w") as f:
+                with open(tmp, "w", encoding="utf-8") as f:
                     json.dump(self.state, f)
                 os.replace(tmp, STATE)
         finally:
-            fcntl.flock(self.lock, fcntl.LOCK_UN)
+            if fcntl:
+                fcntl.flock(self.lock, fcntl.LOCK_UN)
+            else:
+                msvcrt.locking(self.lock.fileno(), msvcrt.LK_UNLCK, 1)
             self.lock.close()
 
 
 def read_state():
     try:
-        return json.load(open(STATE))
+        return json.load(open(STATE, encoding="utf-8"))
     except Exception:
         return empty_state()
 
@@ -137,18 +150,32 @@ def unlock(state, key):
     state["achievements"][key] = stamp
     state["last_unlock"] = {"key": key, "at": stamp}
     emoji, name, desc = ACHIEVEMENTS[key]
+    notify(f"{emoji} {name} — {desc}")
+
+
+def notify(text, title="Claude Code achievement"):
+    """Desktop notification: osascript on macOS, a Windows toast via PowerShell, else nothing."""
     try:
-        subprocess.Popen(
-            ["osascript", "-e",
-             f'display notification "{emoji} {name} — {desc}" with title "Claude Code achievement"'],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if sys.platform == "darwin":
+            cmd = ["osascript", "-e", f'display notification "{text}" with title "{title}"']
+        elif sys.platform == "win32":
+            ps = ("[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType=WindowsRuntime] > $null;"
+                  "$t=[Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent('ToastText02');"
+                  f"$t.GetElementsByTagName('text')[0].AppendChild($t.CreateTextNode('{title}')) > $null;"
+                  f"$t.GetElementsByTagName('text')[1].AppendChild($t.CreateTextNode('{text}')) > $null;"
+                  "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Claude Code').Show("
+                  "[Windows.UI.Notifications.ToastNotification]::new($t))")
+            cmd = ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps]
+        else:
+            return
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, encoding="utf-8")
     except Exception:
         pass
 
 
 def fable_usage():
     try:
-        return float(json.load(open(USAGE_CACHE)).get("fableUsage") or 0)
+        return float(json.load(open(USAGE_CACHE, encoding="utf-8")).get("fableUsage") or 0)
     except Exception:
         return 0.0
 
@@ -247,7 +274,7 @@ def cmd_widget():
 def cmd_seed():
     days = set()
     try:
-        for line in open(HISTORY):
+        for line in open(HISTORY, encoding="utf-8"):
             try:
                 ts = json.loads(line).get("timestamp")
                 if ts:
