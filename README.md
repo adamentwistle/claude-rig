@@ -4,6 +4,40 @@ The look-and-feel layer for Claude Code on this Mac: status line, themes, Ghostt
 spinner verb packs, and the streaks/achievements board. Files are symlinked into place by
 `install.sh`; edit them here.
 
+## Install with an agent
+
+Paste this to Claude Code (or any coding agent) along with the repo URL. It is written to be
+followed verbatim; the human only needs to answer the two questions in step 2 and reload Ghostty.
+
+```text
+Install the claude-rig terminal setup from <REPO_URL>. Follow these steps exactly and tell me
+before doing anything outside them.
+
+1. Prerequisites. Check each and install what is missing: macOS with Ghostty (brew install --cask ghostty),
+   bun (curl -fsSL https://bun.sh/install | bash), python3, and ccstatusline pinned to 2.2.27
+   (bun add -g ccstatusline@2.2.27). Confirm `which ccstatusline` prints a path.
+2. Ask me two things: (a) which Claude config dir I use — default is ~/.claude; the repo assumes
+   ~/.claude-work — and (b) whether I already have a ~/.config/ghostty/config or
+   ~/.claude*/settings.json you must preserve. Do not guess.
+3. git clone <REPO_URL> ~/Projects/claude-rig and cd into it.
+4. In ccstatusline/settings.json and claude/settings-snippets.json, replace every
+   `.claude-work` with my config dir name from step 2a if it differs. Leave /Users/<name> paths
+   alone; install.sh rewrites those.
+5. Run: CLAUDE_CONFIG_DIR=<my config dir> ./install.sh
+   It symlinks files into ~/.config/ghostty, ~/.config/ccstatusline and <config dir>/{bin,commands,spinner-packs},
+   backing up any real file it displaces as *.bak-<date>. Show me the output.
+6. Merge claude/settings-snippets.json into <config dir>/settings.json: statusLine, spinnerVerbs,
+   and the hooks (PostToolUse, PostToolUseFailure, SessionStart, UserPromptSubmit). Append to hook
+   arrays that already exist, never overwrite them. Fix the statusLine command to `which ccstatusline`.
+7. Verify: `ghostty +validate-config` exits 0; `<config dir>/bin/usage-guard --check` prints a verdict;
+   `<config dir>/bin/streaks.py show` prints a board; `echo '{}' | ccstatusline` prints three lines.
+8. Tell me to reload Ghostty with cmd+shift+, and start a new Claude Code session. Then run
+   /theme list and /spinner list so I can pick.
+
+If ccstatusline shows stale usage numbers, read "Things that bite" in README.md before changing anything.
+Do not edit files under ~/Projects/claude-rig except as described in step 4.
+```
+
 ## Layout
 
 | Path | What |
