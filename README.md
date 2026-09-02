@@ -54,6 +54,26 @@ Do not edit files under ~/Projects/claude-rig except as described in step 4.
 | `claude/commands/` | The `/theme` and `/spinner` slash commands |
 | `claude/settings-snippets.json` | The parts of `~/.claude-work/settings.json` this rig needs (statusLine, spinnerVerbs, hooks). Merge by hand |
 
+## Windows
+
+The same rig runs on Windows with WezTerm standing in for Ghostty (Ghostty has no Windows build).
+`install.ps1` symlinks the scripts, packs, commands and `wezterm/wezterm.lua` (as `~\.wezterm.lua`)
+and renders `ccstatusline/settings.json` with this machine's python and paths; symlinks need
+Developer Mode or an elevated shell. `/theme` writes `~/.config/ccstatusline/.theme` and WezTerm
+watches that marker, so the terminal and status line still switch together. Shaders do not port.
+Hook commands in `settings.json` call the scripts through python, for example
+`'<python.exe>' '<config dir>\bin\streaks.py' tool`.
+
+```powershell
+git clone <REPO_URL> E:\dev\projects\claude-rig; cd E:\dev\projects\claude-rig
+$env:CLAUDE_CONFIG_DIR = 'C:\Users\<you>\.claude-work'   # or leave unset for ~\.claude
+.\install.ps1
+npm i -g ccstatusline@2.2.27
+```
+
+Windows traps: Python defaults to cp1252, so the scripts force UTF-8 on stdout and on every file
+they open; `python` on PATH may be a venv, so `install.ps1` prefers the python.org 3.12 install.
+
 ## Things that bite
 
 - The invisible `extra-usage-used` widget at the end of status line 1 is what makes ccstatusline
