@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""Rotate Claude Code spinner verb packs.
+
+  spinner-pack list              show packs, mark the active one
+  spinner-pack <name>            activate a pack (replace mode)
+  spinner-pack <name> --append   activate on top of the default verbs
+  spinner-pack random            pick any pack at random
+  spinner-pack daily             deterministic pick that changes each day
+  spinner-pack rotate            next pack in spinner-packs/rotation.json (used by the SessionStart hook)
+  spinner-pack off               remove the override, back to defaults
+  spinner-pack current           print the active pack name
+
+Packs are JSON arrays of verbs in ~/.claude-work/spinner-packs/<name>.json.
+Claude Code picks up the change live; no restart needed.
+"""
+import json, os, random, sys, time, datetime
+
+HOME = os.path.expanduser("~")
+CFG = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(HOME, ".claude-work")
+PACKS = os.path.join(CFG, "spinner-packs")
+SETTINGS = os.path.join(CFG, "settings.json")
+MARK = os.path.join(PACKS, ".active")
+ROTATION = os.path.join(PACKS, "rotation.json")
+
+
+def packs():
+    return sorted(f[:-5] for f in os.listdir(PACKS) if f.endswith(".json"))
+
+
+def active():
+    try:
+        return open(MARK).read().strip()
+    except OSError:
+        return None
+
+
+def load_settings():
+    with open(SETTINGS) as f:
+        return json.load(f)
+
+
+def save_settings(s):
+    tmp = SETTINGS + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(s, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    os.replace(tmp, SETTINGS)
+
+
+def activate(name, append=False):
+    path = os.path.join(PACKS, name + ".json")
+    if not os.path.exists(path):
+        sys.exit(f"no such pack: {name}  (have: {', '.join(packs())})")
+    verbs = json.load(open(path))
+    s = load_settings()
+    s["spinnerVerbs"] = {"mode": "append" if append else "replace", "verbs": verbs}
+    save_settings(s)
+    open(MARK, "w").write(name + "\n")
+    print(f"spinner pack: {name} ({len(verbs)} verbs, {'append' if append else 'replace'})")
+
+
+def off():
+    s = load_settings()
+    s.pop("spinnerVerbs", None)
+    save_settings(s)
+    try:
+        os.remove(MARK)
+    except OSError:
+        pass
+    print("spinner pack: off (defaults)")
+
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"):
+        print(__doc__.strip()); return
+    cmd, append = argv[0], "--append" in argv[1:]
+    if cmd == "list":
+        cur = active()
+        for p in packs():
+            n = len(json.load(open(os.path.join(PACKS, p + ".json"))))
+            print(f"{'*' if p == cur else ' '} {p:<12} {n:>2} verbs")
+    elif cmd == "current":
+        print(active() or "off")
+    elif cmd == "off":
+        off()
+    elif cmd == "random":
+        choices = [p for p in packs() if p != active()] or packs()
+        activate(random.choice(choices), append)
+    elif cmd == "rotate":
+        try:
+            order = [p for p in json.load(open(ROTATION)) if p in packs()]
+        except Exception:
+            order = packs()
+        cur = active()
+        nxt = order[(order.index(cur) + 1) % len(order)] if cur in order else order[0]
+        activate(nxt, append)
+    elif cmd == "daily":
+        day = datetime.date.today().toordinal()
+        activate(packs()[day % len(packs())], append)
+    else:
+        activate(cmd, append)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

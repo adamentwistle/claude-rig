@@ -1,0 +1,24 @@
+# Nightshade — deep violet charcoal with moss-green and lilac accents
+# (gray-900 #2B2B2B, green-400 #76EA6A, purple-400 #A17AF2)
+palette = 0=#312d3b
+palette = 1=#f0655f
+palette = 2=#5fcf55
+palette = 3=#e5c46a
+palette = 4=#6fa8f5
+palette = 5=#a17af2
+palette = 6=#5fd7d0
+palette = 7=#cfcbd8
+palette = 8=#736d82
+palette = 9=#ff7b75
+palette = 10=#76ea6a
+palette = 11=#f2d57f
+palette = 12=#8bbcff
+palette = 13=#b995ff
+palette = 14=#7de8e1
+palette = 15=#f3f1f8
+background = #24222c
+foreground = #e8e6ef
+cursor-color = #76ea6a
+cursor-text = #24222c
+selection-background = #443f54
+selection-foreground = #f3f1f8

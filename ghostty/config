@@ -1,0 +1,19 @@
+# let herdr own the layout; stay out of its way
+macos-option-as-alt = true
+confirm-close-surface = false
+window-padding-x = 0
+window-padding-y = 0
+mouse-hide-while-typing = true
+shell-integration = zsh
+shell-integration-features = no-cursor
+
+
+# theme (applied 2026-09-02 with matching ccstatusline palette)
+theme = Nightshade
+
+# shaders — comment a line out to turn it off, then cmd+shift+, to reload
+custom-shader = /Users/aae/.config/ghostty/shaders/starfield.glsl
+custom-shader = /Users/aae/.config/ghostty/shaders/cursor-trail.glsl
+custom-shader = /Users/aae/.config/ghostty/shaders/bloom.glsl
+custom-shader = /Users/aae/.config/ghostty/shaders/crt.glsl
+custom-shader-animation = true

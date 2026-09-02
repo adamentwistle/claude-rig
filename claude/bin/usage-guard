@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""UserPromptSubmit hook: tell Claude to economise when a usage window is on course to run out.
+
+Reads ccstatusline's usage cache (~/.cache/ccstatusline/usage.json, refreshed every 3 min while
+the status line is alive). Prints nothing in the normal case. When a window is tight AND its reset
+is more than MIN_RESET_AWAY away, prints one short line, which Claude Code adds to the context.
+
+Tight means: projected to pass 100% before reset, or already past HIGH_USED. Critical means past
+CRITICAL_USED. Weekly windows use the same rule, so a bad week stays economical all week.
+
+  usage-guard            hook mode (stdin ignored, stdout = context or nothing)
+  usage-guard --check    show every window's numbers and the verdict
+Env for testing: USAGE_GUARD_CACHE (path), USAGE_GUARD_NOW (epoch seconds).
+"""
+import json
+import os
+import sys
+import time
+from datetime import datetime
+
+CACHE = os.environ.get("USAGE_GUARD_CACHE") or os.path.expanduser("~/.cache/ccstatusline/usage.json")
+CACHE_STALE_AFTER = 3600
+MIN_RESET_AWAY = 30 * 60
+HIGH_USED = 85.0
+CRITICAL_USED = 95.0
+
+WINDOWS = [
+    ("5-hour window", 5 * 3600, "sessionUsage", "sessionResetAt"),
+    ("weekly Fable limit", 7 * 86400, "fableUsage", "fableResetAt"),
+    ("weekly all-models limit", 7 * 86400, "weeklyUsage", "weeklyResetAt"),
+]
+
+ADVICE = ("Be economical: keep replies short, avoid subagents and workflows, don't re-read files "
+          "already in context, batch tool calls, prefer targeted greps to broad reads.")
+CRITICAL_ADVICE = " Confirm with the user before starting any large multi-file task."
+
+
+def fmt_duration(secs):
+    secs = int(secs)
+    d, rem = divmod(secs, 86400)
+    h, rem = divmod(rem, 3600)
+    m = rem // 60
+    if d:
+        return f"{d}d {h}h"
+    if h:
+        return f"{h}h {m:02d}m"
+    return f"{m}m"
+
+
+def load(now):
+    try:
+        if now - os.path.getmtime(CACHE) > CACHE_STALE_AFTER:
+            return None
+        data = json.load(open(CACHE))
+        return None if data.get("error") else data
+    except Exception:
+        return None
+
+
+def assess(data, now):
+    """Yield (name, used, projected, seconds_to_reset, level) per window; level in none/tight/critical."""
+    for name, length, ukey, rkey in WINDOWS:
+        used = data.get(ukey)
+        reset = data.get(rkey)
+        if used is None or not reset:
+            continue
+        try:
+            reset_ts = datetime.fromisoformat(str(reset).replace("Z", "+00:00")).timestamp()
+        except Exception:
+            continue
+        used = float(used)
+        to_reset = reset_ts - now
+        elapsed = max(0.0, min(1.0, (now - (reset_ts - length)) / length))
+        projected = used / elapsed if elapsed >= 0.02 else None
+        level = "none"
+        if used >= CRITICAL_USED:
+            level = "critical"
+        elif used >= HIGH_USED or (projected is not None and projected > 100.0):
+            level = "tight"
+        if to_reset <= MIN_RESET_AWAY:
+            level = "none"
+        yield name, used, projected, to_reset, level
+
+
+def main(argv):
+    now = float(os.environ.get("USAGE_GUARD_NOW") or time.time())
+    data = load(now)
+    check = "--check" in argv
+    if data is None:
+        if check:
+            print("no usable usage cache (missing, stale, or error)")
+        return 0
+    hits = []
+    for name, used, projected, to_reset, level in assess(data, now):
+        if check:
+            proj = f"{projected:.0f}%" if projected is not None else "n/a"
+            print(f"{name:<24} used {used:5.1f}%  projected {proj:>5}  reset in {fmt_duration(to_reset):>8}  -> {level}")
+        if level != "none":
+            hits.append((name, used, projected, to_reset, level))
+    if not hits:
+        return 0
+    parts = []
+    for name, used, projected, to_reset, level in hits:
+        proj = f", on pace for {projected:.0f}%" if projected is not None and projected > 100 else ""
+        parts.append(f"{name}: {used:.0f}% used{proj}, resets in {fmt_duration(to_reset)}")
+    critical = any(h[4] == "critical" for h in hits)
+    msg = "[usage guard] " + "; ".join(parts) + ". " + ADVICE + (CRITICAL_ADVICE if critical else "")
+    if check:
+        print("would inject:", msg)
+    else:
+        print(msg)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

@@ -1,0 +1,81 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/aae/.bun/bin/ccstatusline",
+    "padding": 0
+  },
+  "spinnerVerbs": {
+    "mode": "replace",
+    "verbs": [
+      "Simmering",
+      "Reducing",
+      "Marinating",
+      "Whisking",
+      "Proving",
+      "Kneading",
+      "Seasoning",
+      "Plating",
+      "Deglazing",
+      "Julienning",
+      "Braising",
+      "Tempering",
+      "Caramelising",
+      "Folding",
+      "Resting",
+      "Searing",
+      "Basting",
+      "Garnishing",
+      "Tasting",
+      "Flambéing"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/aae/.claude-work/bin/streaks.py tool",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/aae/.claude-work/bin/spinner-pack rotate >/dev/null 2>&1 || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/aae/.claude-work/bin/streaks.py tool-failed",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/aae/.claude-work/bin/usage-guard",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

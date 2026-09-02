@@ -1,0 +1,22 @@
+[
+  "Syncing",
+  "Finalizing",
+  "Reorging",
+  "Pruning",
+  "Indexing",
+  "Peering",
+  "Gossiping",
+  "Attesting",
+  "Proposing",
+  "Snapshotting",
+  "Rebroadcasting",
+  "Mempooling",
+  "Validating",
+  "Bootstrapping",
+  "Checkpointing",
+  "Load-balancing",
+  "Failing-over",
+  "Backfilling",
+  "Sharding",
+  "Slotting"
+]

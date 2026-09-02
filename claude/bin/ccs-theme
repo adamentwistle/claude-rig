@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Switch the Ghostty theme and the ccstatusline palette together.
+
+  ccs-theme list            show themes, mark the active one
+  ccs-theme <name>          apply a theme (Ghostty + status line + usage bars)
+  ccs-theme current         print the active theme
+
+Roles in the status line: label (the "5hr:" / "model:" chips), value (everything else),
+accent (the streaks badge), and good / warn / bad for the usage bars.
+Ghostty needs cmd+shift+, to reload after a switch.
+"""
+import json, os, re, sys
+
+HOME = os.path.expanduser("~")
+CCS = os.path.join(HOME, ".config/ccstatusline/settings.json")
+PALETTE = os.path.join(HOME, ".config/ccstatusline/palette.json")
+SHADER = os.path.join(HOME, ".config/ghostty/shaders/cursor-trail.glsl")
+STARS = os.path.join(HOME, ".config/ghostty/shaders/starfield.glsl")
+GHOSTTY = os.path.join(HOME, ".config/ghostty/config")
+MARK = os.path.join(HOME, ".config/ccstatusline/.theme")
+ACCENT_IDS = {"streaks-1"}
+
+THEMES = {
+    "nightshade": dict(ghostty="Nightshade", label_bg="76ea6a", label_fg="24222c", val_bg="3a3646", val_fg="e8e6ef",
+                      accent_bg="a17af2", accent_fg="24222c", good="76ea6a", warn="f2d57f", bad="ff7b75", cursor="76ea6a", bg="24222c"),
+    "rose-pine": dict(ghostty="Rose Pine", label_bg="c4a7e7", label_fg="191724", val_bg="26233a", val_fg="e0def4",
+                      accent_bg="ebbcba", accent_fg="191724", good="9ccfd8", warn="f6c177", bad="eb6f92", cursor="c4a7e7", bg="191724"),
+    "kanagawa-wave": dict(ghostty="Kanagawa Wave", label_bg="7e9cd8", label_fg="1f1f28", val_bg="2a2a37", val_fg="dcd7ba",
+                          accent_bg="957fb8", accent_fg="1f1f28", good="98bb6c", warn="e6c384", bad="ff5d62", cursor="7e9cd8", bg="1f1f28"),
+    "kanagawa-dragon": dict(ghostty="Kanagawa Dragon", label_bg="c8c093", label_fg="181616", val_bg="282727", val_fg="c5c9c5",
+                            accent_bg="8992a7", accent_fg="181616", good="87a987", warn="e6c384", bad="e46876", cursor="c8c093", bg="181616"),
+    "catppuccin-mocha": dict(ghostty="Catppuccin Mocha", label_bg="a6e3a1", label_fg="11111b", val_bg="313244", val_fg="cdd6f4",
+                             accent_bg="cba6f7", accent_fg="11111b", good="a6e3a1", warn="fab387", bad="f38ba8", cursor="a6e3a1", bg="1e1e2e"),
+}
+
+
+def current():
+    try:
+        return open(MARK).read().strip()
+    except OSError:
+        return None
+
+
+def apply(name):
+    t = THEMES.get(name)
+    if not t:
+        sys.exit(f"unknown theme: {name}  (have: {', '.join(THEMES)})")
+    cur = THEMES.get(current() or "", None)
+    c = json.load(open(CCS))
+    for line in c["lines"]:
+        for item in line:
+            bg = item.get("backgroundColor", "")
+            if item.get("id") in ACCENT_IDS:
+                role = "accent"
+            elif cur and bg == f"hex:{cur['label_bg']}":
+                role = "label"
+            elif cur and bg == f"hex:{cur['val_bg']}":
+                role = "value"
+            elif bg == "ansi256:148":   # original pre-theme lime labels
+                role = "label"
+            elif bg == "ansi256:238":   # original pre-theme grey values
+                role = "value"
+            else:
+                continue
+            key = {"label": "label", "value": "val", "accent": "accent"}[role]
+            item["backgroundColor"] = f"hex:{t[key + '_bg']}"
+            item["color"] = f"hex:{t[key + '_fg']}"
+    c["colorLevel"] = 3
+    tmp = CCS + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(c, f, indent=2)
+        f.write("\n")
+    os.replace(tmp, CCS)
+    json.dump({"good": t["good"], "warn": t["warn"], "bad": t["bad"]}, open(PALETTE, "w"))
+    g = open(GHOSTTY).read()
+    line = f"theme = {t['ghostty']}"
+    g2, n = re.subn(r"^theme = .*$", line, g, flags=re.M)
+    if n == 0:
+        g2 = g.rstrip("\n") + "\n\n" + line + "\n"
+    open(GHOSTTY, "w").write(g2)
+    try:  # re-tint the cursor trail shader
+        h = t["cursor"]; r, g, b = (int(h[k:k+2], 16) / 255 for k in (0, 2, 4))
+        sh = open(SHADER).read()
+        sh2 = re.sub(r"^const vec3 TRAIL_COLOR = .*$", f"const vec3 TRAIL_COLOR = vec3({r:.3f}, {g:.3f}, {b:.3f}); // #{h}", sh, flags=re.M)
+        open(SHADER, "w").write(sh2)
+        h = t["bg"]; r, g, b = (int(h[k:k+2], 16) / 255 for k in (0, 2, 4))
+        st = open(STARS).read()
+        st2 = re.sub(r"^const vec3 BG = .*$", f"const vec3 BG = vec3({r:.3f}, {g:.3f}, {b:.3f}); // #{h}", st, flags=re.M)
+        open(STARS, "w").write(st2)
+    except OSError:
+        pass
+    open(MARK, "w").write(name + "\n")
+    print(f"theme: {name}  (Ghostty '{t['ghostty']}', reload with cmd+shift+,)")
+
+
+def main(argv):
+    cmd = argv[0] if argv else "list"
+    if cmd == "list":
+        cur = current()
+        for n, t in THEMES.items():
+            print(f"{'*' if n == cur else ' '} {n:<18} {t['ghostty']}")
+    elif cmd == "current":
+        print(current() or "unknown")
+    elif cmd in ("-h", "--help"):
+        print(__doc__.strip())
+    else:
+        apply(cmd)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -1,0 +1,392 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "1d062263-3127-4993-9e67-33020fb6c54f",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "rawValue": false,
+        "customText": "5hr:",
+        "metadata": {
+          "inverse": "false"
+        }
+      },
+      {
+        "id": "usage-bar-session",
+        "type": "custom-command",
+        "commandPath": "/Users/aae/.config/ccstatusline/usage-bar.py session",
+        "timeout": 1000,
+        "preserveColors": true,
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "merge": true
+      },
+      {
+        "id": "7",
+        "type": "reset-timer",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "metadata": {
+          "display": "time",
+          "compact": "false"
+        }
+      },
+      {
+        "id": "bc9df898-bec9-4508-8da4-6a7552f02d3c",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "rawValue": false,
+        "customText": "Week:",
+        "metadata": {
+          "inverse": "false"
+        }
+      },
+      {
+        "id": "2a383b6c-3545-4016-93fe-69d031fad663",
+        "type": "custom-text",
+        "customText": "Fable:",
+        "merge": "no-padding",
+        "color": "hex:e8e6ef",
+        "bold": true,
+        "backgroundColor": "hex:3a3646"
+      },
+      {
+        "id": "usage-bar-fable",
+        "type": "custom-command",
+        "commandPath": "/Users/aae/.config/ccstatusline/usage-bar.py fable",
+        "timeout": 1000,
+        "preserveColors": true,
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "merge": true
+      },
+      {
+        "id": "fc2766a0-0227-4cd8-830d-84a51d7495c5",
+        "type": "custom-text",
+        "customText": "All:",
+        "merge": "no-padding",
+        "bold": true,
+        "backgroundColor": "hex:3a3646",
+        "color": "hex:e8e6ef"
+      },
+      {
+        "id": "usage-bar-weekly",
+        "type": "custom-command",
+        "commandPath": "/Users/aae/.config/ccstatusline/usage-bar.py weekly",
+        "timeout": 1000,
+        "preserveColors": true,
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "merge": true
+      },
+      {
+        "id": "10524eee-1800-4045-b244-a0878e63c310",
+        "type": "weekly-reset-timer",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "metadata": {
+          "display": "time",
+          "absolute": "false",
+          "compact": "false"
+        }
+      },
+      {
+        "id": "usage-cache-keeper",
+        "type": "extra-usage-used",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "rawValue": true,
+        "metadata": {
+          "hideIfDisabled": "true"
+        }
+      }
+    ],
+    [
+      {
+        "id": "05a7f979-1e5f-49fe-8b51-c0edb6541198",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "model:"
+      },
+      {
+        "id": "921dfac4-c745-443a-8dc5-8c991999d712",
+        "type": "model",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "merge": true
+      },
+      {
+        "id": "98351285-d1ce-43af-ac4e-8e465f6df286",
+        "type": "custom-text",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "customText": "-",
+        "merge": true
+      },
+      {
+        "id": "24a089d7-a7a6-4a84-9502-111c030abd6a",
+        "type": "thinking-effort",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "dim": "parens",
+        "rawValue": true
+      },
+      {
+        "id": "5bd76daf-c56a-49e8-9f29-69f2d8107cfe",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "context:"
+      },
+      {
+        "id": "43a2ab28-8750-4b17-b54e-71040089ab91",
+        "type": "context-percentage-usable",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "merge": true,
+        "metadata": {
+          "display": "slider"
+        }
+      },
+      {
+        "id": "9a2927ee-ecaa-4cc6-b1ad-0e1cb74e14eb",
+        "type": "compaction-counter",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "character": "-",
+        "metadata": {
+          "nerdFont": "true",
+          "showTriggers": "false",
+          "showReclaimed": "false"
+        }
+      },
+      {
+        "id": "43ceab18-c4b7-48a5-80de-5e45337e71ee",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "cache hit:"
+      },
+      {
+        "id": "3b7b32a4-3466-4326-858b-1394e356d230",
+        "type": "custom-text",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "customText": "turn:",
+        "merge": "no-padding"
+      },
+      {
+        "id": "63d29c2b-ceac-4638-8d1a-d3b0feb66f4a",
+        "type": "cache-hit-rate",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "metadata": {
+          "nerdFont": "true",
+          "cacheScopeSession": "false"
+        },
+        "merge": true
+      },
+      {
+        "id": "c52ea045-eb7e-420e-9ea8-4d13c231913a",
+        "type": "custom-text",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "customText": "session:",
+        "merge": "no-padding"
+      },
+      {
+        "id": "81787a46-07bf-4fca-98b6-f9ea2aa98199",
+        "type": "cache-hit-rate",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "metadata": {
+          "nerdFont": "true",
+          "cacheScopeSession": "true"
+        }
+      }
+    ],
+    [
+      {
+        "id": "57d5e6d6-ccad-4c8a-8885-a5fa444b7b3a",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "dir:"
+      },
+      {
+        "id": "4748bcdd-f1ca-4db3-bbc9-d96d17427e67",
+        "type": "current-working-dir",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "metadata": {
+          "abbreviateHome": "true"
+        }
+      },
+      {
+        "id": "8e8c1a5d-1a21-47ae-874e-963e220f503c",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "gh:"
+      },
+      {
+        "id": "f8a59110-b643-4e02-bb3b-62ba577a1940",
+        "type": "git-origin-repo",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "merge": true,
+        "metadata": {
+          "linkToRepo": "false",
+          "hideNoRemote": "false"
+        }
+      },
+      {
+        "id": "e9f3c12e-0bb1-4689-be2c-9eaac25085c8",
+        "type": "git-branch",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "merge": true,
+        "metadata": {
+          "hideNoGit": "false"
+        }
+      },
+      {
+        "id": "git-worktree-1",
+        "type": "git-worktree",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "merge": true,
+        "metadata": {
+          "hideNoGit": "true"
+        }
+      },
+      {
+        "id": "0efa3d66-14f5-4587-a76c-60574a3ea582",
+        "type": "git-changes",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "metadata": {
+          "hideNoGit": "false"
+        }
+      },
+      {
+        "id": "49db8967-153d-4e66-a7b6-c31aedbf708b",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "mem:"
+      },
+      {
+        "id": "553ace36-b51b-4165-8503-6bfc48d35f42",
+        "type": "free-memory",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true
+      },
+      {
+        "id": "1ce1c242-7f4d-46a9-a65a-ac3a495fa782",
+        "type": "custom-text",
+        "color": "hex:24222c",
+        "backgroundColor": "hex:76ea6a",
+        "bold": true,
+        "customText": "session:"
+      },
+      {
+        "id": "session-clock-1",
+        "type": "session-clock",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "merge": true
+      },
+      {
+        "id": "7516cd7f-e235-4439-a33f-6999e8f03ce2",
+        "type": "tokens-total",
+        "color": "hex:e8e6ef",
+        "backgroundColor": "hex:3a3646",
+        "bold": true,
+        "rawValue": true,
+        "metadata": {
+          "format": "word"
+        }
+      },
+      {
+        "id": "streaks-1",
+        "type": "custom-command",
+        "commandPath": "/Users/aae/.claude-work/bin/streaks.py widget",
+        "timeout": 1000,
+        "color": "hex:24222c",
+        "backgroundColor": "hex:a17af2",
+        "bold": true
+      }
+    ]
+  ],
+  "flexMode": "full-until-compact",
+  "compactThreshold": 60,
+  "colorLevel": 3,
+  "defaultPadding": " ",
+  "defaultPaddingSide": "both",
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "gitCacheTtlSeconds": 5,
+  "minimalistMode": false,
+  "powerline": {
+    "enabled": true,
+    "separators": [
+      "\ue0b0"
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [
+      "\ue0b0"
+    ],
+    "theme": "custom",
+    "autoAlign": false,
+    "continueThemeAcrossLines": false
+  },
+  "installation": {
+    "method": "pinned",
+    "installedVersion": "2.2.27"
+  }
+}
